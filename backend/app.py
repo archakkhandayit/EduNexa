@@ -161,6 +161,30 @@ QUIZ_PROMPT = """
 def serve_react():
     return send_from_directory(app.static_folder, 'index.html')
 
+
+#### AI-POWERED QUIZ GENERATION ###
+@app.route("/game/generate_quiz", methods=["POST"])
+def generate_quiz():
+    try:
+        data = request.get_json()
+        topic = data.get("topic", "AI/ML")
+        valid_topics = ["Coding", "Algorithm", "Physics", "Maths"]
+
+
+        prompt = QUIZ_PROMPT.replace("given topic", topic)
+
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+
+        cleaned_response = re.sub(r"```json|```", "", response.text).strip()
+        quiz_json = json.loads(cleaned_response)
+
+        return jsonify(quiz_json)
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 #testing the api
 @app.route('/api/data', methods=['GET'])
 def get_data():
