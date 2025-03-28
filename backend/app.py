@@ -14,12 +14,30 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 # ✅ Configure Gemini API at the start
 genai.configure(api_key=GEMINI_API_KEY)
 
-# ✅ Initialize Firebase Admin SDK
-cred = credentials.Certificate("firebase.json")  # 🔥 Replace with your Firebase key file
+# Initialize Firebase Admin SDK using environment variables
+firebase_config = {
+    "type": os.getenv("TYPE"),
+    "project_id": os.getenv("PROJECT_ID"),
+    "private_key_id": os.getenv("PRIVATE_KEY_ID"),
+    "private_key": os.getenv("PRIVATE_KEY").replace("\\n", "\n"),  # Handle newlines properly
+    "client_email": os.getenv("CLIENT_EMAIL"),
+    "client_id": os.getenv("CLIENT_ID"),
+    "auth_uri": os.getenv("AUTH_URI"),
+    "token_uri": os.getenv("TOKEN_URI"),
+    "auth_provider_x509_cert_url": os.getenv("AUTH_PROVIDER_X509_CERT_URL"),
+    "client_x509_cert_url": os.getenv("CLIENT_X509_CERT_URL"),
+    "universe_domain": os.getenv("UNIVERSE_DOMAIN"),
+}
+
+# Create credentials object
+cred = credentials.Certificate(firebase_config)
+
+# Initialize Firebase Admin SDK
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-app = Flask(__name__, static_folder='../frontend/dist', static_url_path='/')
+app = Flask(__name__, static_folder=None)
+
 # app = Flask(__name__)
 CORS(app)  
 
@@ -158,8 +176,8 @@ QUIZ_PROMPT = """
     """
 
 @app.route('/')
-def serve_react():
-    return send_from_directory(app.static_folder, 'index.html')
+def hello():
+    return jsonify({"message": "Hello from Flask and Firebase!"})
 
 #testing the api
 @app.route('/api/data', methods=['GET'])
